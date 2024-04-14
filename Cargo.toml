@@ -1,0 +1,13 @@
+[package]
+name = "triangle"
+version = "0.1.0"
+edition = "2021"
+authors = ["husky <husky.robot.dog@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/huskyrobotdog/triangle"
+homepage = "https://github.com/huskyrobotdog/triangle"
+description = ""
+readme = "README.md"
+exclude = [".vscode", "rustfmt.toml"]
+
+[dependencies]
