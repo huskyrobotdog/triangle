@@ -2586,6 +2586,7 @@ dependencies = [
  "config",
  "log",
  "num_cpus",
+ "once_cell",
  "reqwest",
  "ring",
  "sea-orm",

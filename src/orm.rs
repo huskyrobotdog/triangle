@@ -1,9 +1,17 @@
 use crate::env;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
+use once_cell::sync::Lazy;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
-use std::time::Duration;
+use std::{
+	collections::HashMap,
+	sync::{Arc, Mutex},
+	time::Duration,
+};
 
-pub async fn init(config: &env::Database) -> Result<DatabaseConnection> {
+static INS: Lazy<Mutex<HashMap<String, Arc<DatabaseConnection>>>> =
+	Lazy::new(|| Mutex::new(HashMap::new()));
+
+pub async fn init(key: Option<&str>, config: &env::Database) -> Result<()> {
 	let mut opt = ConnectOptions::new(format!(
 		"mysql://{}:{}@{}:{}/{}{}",
 		config.username,
@@ -31,6 +39,16 @@ pub async fn init(config: &env::Database) -> Result<DatabaseConnection> {
 	opt.max_connections(config.max_conn);
 	opt.sqlx_logging(config.show_sql);
 
-	let db = Database::connect(opt).await?;
-	Ok(db)
+	let ins = Arc::new(Database::connect(opt).await?);
+	let mut ins_mutex = INS.lock().unwrap();
+	let key = key.unwrap_or("default").to_string();
+	ins_mutex.insert(key, ins);
+	Ok(())
+}
+
+pub async fn get(key: Option<&str>) -> Result<Arc<DatabaseConnection>> {
+	let key = key.unwrap_or("default");
+	let ins_mutex = INS.lock().unwrap();
+	let ins = ins_mutex.get(key).cloned().ok_or(anyhow!(format!("not found : `{}`", key)));
+	ins
 }

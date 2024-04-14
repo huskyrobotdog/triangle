@@ -53,3 +53,6 @@ pub use log;
 pub use sea_orm;
 #[cfg(feature = "orm")]
 pub mod orm;
+
+#[cfg(feature = "web")]
+pub mod web;
